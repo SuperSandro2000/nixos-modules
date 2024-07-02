@@ -33,5 +33,17 @@ in
     };
 
     programs.firefox.hardwareAcceleration = true;
+
+    system.checks = let
+      openglDriver = config.systemd.tmpfiles.settings.opengl."/run/opengl-driver"."L+".argument;
+    in [
+      (pkgs.runCommand "check-that-intel-driver-json-files-exist" {} /* bash */ ''
+        set -eoux pipefail
+
+        # the cut drops /run/opengl-driver/
+        [[ -e ${openglDriver}/$(echo ${config.environment.sessionVariables.VK_DRIVER_FILES} | cut -d'/' -f4-) ]]
+        touch $out
+      '')
+    ];
   };
 }
